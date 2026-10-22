@@ -109,8 +109,6 @@ em { font-style: italic; color: var(--accent); }
 .btn-primary:hover { background: var(--yellow); color: #3a2a52; }
 .btn-ghost { color: var(--ink); }
 .btn-ghost:hover { color: var(--accent); }
-.btn-light { background: var(--bg); color: var(--ink); }
-.btn-light:hover { background: var(--accent); color: var(--accent-ink); }
 
 /* ========== GİRİŞ ========== */
 .hero { padding-top: 64px; padding-bottom: 56px; }
@@ -216,22 +214,13 @@ em { font-style: italic; color: var(--accent); }
 
 /* İletişim */
 .contact { background: var(--lilac); color: var(--ink); margin-top: 72px; padding-bottom: 80px; }
-.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+.contact-grid > div { max-width: 560px; }
 .contact-title { font-size: clamp(1.6rem, 3.2vw, 2.2rem); margin: 16px 0 24px; text-wrap: balance; }
 .socials { list-style: none; padding: 0; margin: 32px 0 0; }
 .socials li { border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent); }
 .socials a { display: block; padding: 11px 0; text-decoration: none; font-size: 1rem; transition: color .2s, padding .2s; }
 .socials a:hover { color: var(--accent); padding-left: 8px; }
 
-.contact-form { display: grid; gap: 18px; }
-.contact-form label { display: grid; gap: 6px; font-size: .88rem; }
-.contact-form input, .contact-form textarea {
-  font: inherit; font-size: 1rem; color: inherit; background: transparent;
-  border: 0; border-bottom: 1px solid color-mix(in srgb, currentColor 35%, transparent);
-  padding: 10px 0; resize: vertical; outline: none; transition: border-color .2s;
-}
-.contact-form input:focus, .contact-form textarea:focus { border-color: var(--accent); }
-.contact-form .btn { justify-self: start; margin-top: 8px; }
 
 /* Alt bilgi */
 .site-footer { display: flex; justify-content: space-between; padding-top: 28px; padding-bottom: 28px; font-size: .88rem; color: var(--muted); }
@@ -266,7 +255,7 @@ em { font-style: italic; color: var(--accent); }
   .nav a::after { display: none; }
 
   .section { padding-top: 64px; }
-  .about-grid, .contact-grid, .featured, .projects, .extras { grid-template-columns: 1fr; gap: 40px; }
+  .about-grid, .featured, .projects, .extras { grid-template-columns: 1fr; gap: 40px; }
   .about-photo { position: static; max-width: 360px; }
   .skills { grid-template-columns: 1fr; }
   .tl-item { grid-template-columns: 1fr; gap: 4px; }

@@ -1,6 +1,3 @@
-// İletişim formundan gelen mesajların gideceği e-posta adresi
-const EMAIL = "ay.ozcn03@gmail.com";
-
 // Yıl
 document.getElementById("year").textContent = new Date().getFullYear();
 
@@ -56,15 +53,6 @@ const observer = new IntersectionObserver(
   { threshold: 0.12 }
 );
 document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
-
-// İletişim formu: kullanıcının e-posta uygulamasını hazır mesajla açar
-document.getElementById("contactForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const f = e.target;
-  const subject = `Portfolyo üzerinden mesaj — ${f.name.value}`;
-  const body = `${f.message.value}\n\n${f.name.value}\n${f.email.value}`;
-  location.href = `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-});
 
 // Takım yıldızlı şerit: renkleri temadan alır, yıldızlar hafifçe parıldar
 const band = document.querySelector(".stars-band canvas");
