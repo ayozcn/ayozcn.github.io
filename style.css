@@ -161,8 +161,6 @@ em { font-style: italic; color: var(--accent); }
 .skills h3 { font-size: 1.1rem; margin-bottom: 6px; }
 .skills p { margin: 0; font-size: .86rem; color: var(--muted); }
 
-.tools { display: flex; flex-wrap: wrap; gap: 8px; }
-.tools span { font-size: .8rem; padding: 5px 12px; background: var(--bg-alt); border-radius: 99px; color: var(--ink); }
 
 /* Projeler */
 
