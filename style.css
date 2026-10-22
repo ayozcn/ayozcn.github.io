@@ -130,7 +130,7 @@ em { font-style: italic; color: var(--accent); }
 
 /* ========== TAKIM YILDIZLI ŞERİT ========== */
 .stars-band {
-  height: 140px; background: var(--bg-alt);
+  height: 180px; background: var(--bg-alt);
   border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
 }
 .stars-band canvas { display: block; width: 100%; height: 100%; }
