@@ -131,8 +131,19 @@ if (band) {
     ctx.fill();
   }
 
+  // Gökyüzü sağdan sola yavaşça akar; sahne iki kez yan yana çizilerek kesintisiz döner
   function draw(t) {
     ctx.clearRect(0, 0, w, h);
+    const offset = still ? 0 : (t * 0.012) % w;
+    ctx.save();
+    ctx.translate(-offset, 0);
+    scene(t);
+    ctx.translate(w, 0);
+    scene(t);
+    ctx.restore();
+  }
+
+  function scene(t) {
     const tw = (p, speed) => (still ? 0.8 : 0.55 + 0.45 * Math.sin(t / speed + p));
 
     ctx.fillStyle = colors.dust;
