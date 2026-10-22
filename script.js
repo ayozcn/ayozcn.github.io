@@ -116,7 +116,7 @@ if (band) {
         x: (i / cn) * (w + 400) + r() * 100,
         y: h * (0.4 + r() * 0.32),
         v: 0.003 + depth * 0.006,
-        alpha: 0.55 + depth * 0.4,
+        alpha: 0.85 + depth * 0.15,
         img: makeCloud(r, 0.5 + depth * 0.45),
       };
     });
@@ -144,7 +144,7 @@ if (band) {
   }
 
   // Bir bulutu bir kez ekran dışı tuvale çizer: üst üste binen yumuşak kenarlı
-  // kabarcıklar, altta hafif lila gölge, üstte güneş alan beyazlık
+  // kabarcıklar, altta lila gölge, üstte güneş alan beyazlık
   function makeCloud(r, scale) {
     const dpr = devicePixelRatio || 1;
     const cw = 190 * scale, ch = 90 * scale;
@@ -162,13 +162,13 @@ if (band) {
     const puff = (x, y, rad, rgb, a) => {
       const g = c.createRadialGradient(x, y, 0, x, y, rad);
       g.addColorStop(0, `rgba(${rgb}, ${a})`);
-      g.addColorStop(0.55, `rgba(${rgb}, ${a * 0.75})`);
+      g.addColorStop(0.8, `rgba(${rgb}, ${a})`);
       g.addColorStop(1, `rgba(${rgb}, 0)`);
       c.fillStyle = g;
       c.beginPath(); c.arc(x, y, rad, 0, 6.28); c.fill();
     };
-    for (const p of puffs) puff(p.x, p.y + p.rad * 0.25, p.rad * 1.05, "196, 180, 222", 0.35);
-    for (const p of puffs) puff(p.x, p.y - p.rad * 0.1, p.rad, "255, 255, 255", 0.85);
+    for (const p of puffs) puff(p.x, p.y + p.rad * 0.22, p.rad, "205, 190, 230", 0.9);
+    for (const p of puffs) puff(p.x, p.y - p.rad * 0.12, p.rad * 0.96, "255, 255, 255", 1);
     off.cw = cw; off.ch = ch;
     return off;
   }
@@ -182,17 +182,34 @@ if (band) {
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, w, h);
 
-    const sx = w - Math.min(170, w * 0.18), sy = h * 0.6, sr = 22;
-    const haze = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr * 7);
-    haze.addColorStop(0, "rgba(255, 236, 190, 0.75)");
-    haze.addColorStop(0.35, "rgba(255, 222, 170, 0.3)");
-    haze.addColorStop(1, "rgba(255, 222, 170, 0)");
+    const sx = w - Math.min(170, w * 0.18), sy = h * 0.5, sr = 34;
+    const haze = ctx.createRadialGradient(sx, sy, sr * 0.8, sx, sy, sr * 4.5);
+    haze.addColorStop(0, "rgba(255, 210, 90, 0.55)");
+    haze.addColorStop(0.4, "rgba(255, 214, 120, 0.22)");
+    haze.addColorStop(1, "rgba(255, 214, 120, 0)");
     ctx.fillStyle = haze;
-    ctx.fillRect(sx - sr * 7, sy - sr * 7, sr * 14, sr * 14);
-    const disc = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr);
-    disc.addColorStop(0, "#fffdf4");
-    disc.addColorStop(0.7, "#fff1c6");
-    disc.addColorStop(1, "rgba(255, 228, 160, 0.9)");
+    ctx.fillRect(sx - sr * 4.5, sy - sr * 4.5, sr * 9, sr * 9);
+
+    // yumuşak ışık huzmeleri, çok yavaş döner
+    const turn = still ? 0 : t / 20000;
+    for (let i = 0; i < 12; i++) {
+      const a = turn + (i * Math.PI) / 6, spread = 0.09;
+      const len = sr * (i % 2 ? 2.2 : 2.7);
+      const g = ctx.createRadialGradient(sx, sy, sr, sx, sy, len);
+      g.addColorStop(0, "rgba(255, 200, 80, 0.45)");
+      g.addColorStop(1, "rgba(255, 200, 80, 0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(sx + Math.cos(a - spread) * sr, sy + Math.sin(a - spread) * sr);
+      ctx.lineTo(sx + Math.cos(a) * len, sy + Math.sin(a) * len);
+      ctx.lineTo(sx + Math.cos(a + spread) * sr, sy + Math.sin(a + spread) * sr);
+      ctx.fill();
+    }
+
+    const disc = ctx.createRadialGradient(sx - sr * 0.25, sy - sr * 0.25, 0, sx, sy, sr);
+    disc.addColorStop(0, "#fff3b0");
+    disc.addColorStop(0.6, "#ffd34d");
+    disc.addColorStop(1, "#ffb627");
     ctx.fillStyle = disc;
     ctx.beginPath(); ctx.arc(sx, sy, sr, 0, 6.28); ctx.fill();
 
