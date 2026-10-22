@@ -203,8 +203,8 @@ em { font-style: italic; color: var(--accent); }
 .tl-item::before { content: ""; position: absolute; left: -7px; top: 7px; width: 13px; height: 13px; border-radius: 50%; background: var(--yellow); border: 3px solid var(--accent); }
 .tl-date { font-size: .82rem; color: var(--muted); padding-top: 4px; }
 .tl-item h3 { font-size: 1.2rem; }
-.tl-org { color: var(--accent-text); font-weight: 500; margin: 2px 0 6px; font-size: .88rem; }
-.tl-item p:last-child { color: var(--muted); margin: 0; }
+.tl-org { color: var(--accent-text); font-weight: 500; margin: 2px 0 0; font-size: .88rem; }
+.tl-item p:not(.tl-org) { color: var(--muted); margin: 6px 0 0; font-size: .88rem; }
 .cv-btn { margin-top: 8px; }
 .more { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: 20px 24px; background: var(--bg-alt); border-radius: var(--radius); }
 .more p { margin: 0; flex: 1 1 320px; color: var(--muted); }
