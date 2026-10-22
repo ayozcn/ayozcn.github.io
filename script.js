@@ -59,7 +59,7 @@ const band = document.querySelector(".stars-band canvas");
 if (band) {
   const ctx = band.getContext("2d");
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let w, h, dust, groups, sparkles, clouds, colors, night, visible = true;
+  let w, h, dust, groups, sparkles, clouds, wisps, colors, night, visible = true;
 
   // Her açılışta aynı gökyüzü çizilsin diye sabit tohumlu rastgele sayı
   const seeded = (seed) => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -108,16 +108,23 @@ if (band) {
       return { x: last.x + 40 + r() * 50, y: clampY(h * (0.2 + r() * 0.6)), s: 7 + r() * 4, p: r() * 6.28 };
     });
 
-    const cn = Math.max(3, Math.round(w / 260));
-    clouds = Array.from({ length: cn }, (_, i) => ({
-      x: (i / cn) * (w + 240) + r() * 80,
-      y: h * (0.3 + r() * 0.42),
-      s: 0.7 + r() * 0.5,
-      v: 0.008 + r() * 0.008,
+    // Bulutlar: uzaktakiler küçük, soluk ve yavaş; yakındakiler büyük ve biraz daha hızlı
+    const cn = Math.max(4, Math.round(w / 220));
+    clouds = Array.from({ length: cn }, (_, i) => {
+      const depth = r();
+      return {
+        x: (i / cn) * (w + 400) + r() * 100,
+        y: h * (0.4 + r() * 0.32),
+        v: 0.003 + depth * 0.006,
+        alpha: 0.55 + depth * 0.4,
+        img: makeCloud(r, 0.5 + depth * 0.45),
+      };
+    });
+    wisps = Array.from({ length: Math.max(2, Math.round(w / 500)) }, () => ({
+      x: r() * w, y: h * (0.12 + r() * 0.25), len: 120 + r() * 180, v: 0.002,
     }));
-    // Açılışta hiçbir bulut güneşin önünde başlamasın
     const sunX = w - Math.min(170, w * 0.18);
-    for (const c of clouds) if (Math.abs(c.x - 120 - sunX) < 120) c.x += 200;
+    for (const c of clouds) if (Math.abs(c.x - 200 + c.img.cw / 2 - sunX) < 130) c.x += 260;
   }
 
   function sparkle(x, y, size) {
@@ -136,59 +143,77 @@ if (band) {
     if (night) drawNight(t); else drawDay(t);
   }
 
-  // Sabah: güneş yerinde durur, ışınları yavaşça döner, bulutlar sağdan sola süzülür
+  // Bir bulutu bir kez ekran dışı tuvale çizer: üst üste binen yumuşak kenarlı
+  // kabarcıklar, altta hafif lila gölge, üstte güneş alan beyazlık
+  function makeCloud(r, scale) {
+    const dpr = devicePixelRatio || 1;
+    const cw = 190 * scale, ch = 90 * scale;
+    const off = document.createElement("canvas");
+    off.width = cw * dpr; off.height = ch * dpr;
+    const c = off.getContext("2d");
+    c.scale(dpr, dpr);
+    // ortası kabarık, kenarları alçak, tabanı düz bir küme
+    const puffs = Array.from({ length: 16 + Math.floor(r() * 8) }, () => {
+      const t = r();
+      const mid = 1 - Math.abs(t - 0.5) * 2;
+      const rad = (10 + r() * 12 + mid * 10) * scale;
+      return { x: cw * (0.16 + t * 0.68), y: ch * 0.66 - mid * ch * 0.18 - r() * rad * 0.5, rad };
+    });
+    const puff = (x, y, rad, rgb, a) => {
+      const g = c.createRadialGradient(x, y, 0, x, y, rad);
+      g.addColorStop(0, `rgba(${rgb}, ${a})`);
+      g.addColorStop(0.55, `rgba(${rgb}, ${a * 0.75})`);
+      g.addColorStop(1, `rgba(${rgb}, 0)`);
+      c.fillStyle = g;
+      c.beginPath(); c.arc(x, y, rad, 0, 6.28); c.fill();
+    };
+    for (const p of puffs) puff(p.x, p.y + p.rad * 0.25, p.rad * 1.05, "196, 180, 222", 0.35);
+    for (const p of puffs) puff(p.x, p.y - p.rad * 0.1, p.rad, "255, 255, 255", 0.85);
+    off.cw = cw; off.ch = ch;
+    return off;
+  }
+
+  // Sabah: güneş ufukta parlar, bulutlar sağdan sola ağır ağır süzülür
   function drawDay(t) {
     const sky = ctx.createLinearGradient(0, 0, 0, h);
-    sky.addColorStop(0, "#ece0fd");
-    sky.addColorStop(1, "#fdf0da");
+    sky.addColorStop(0, "#d9e4f7");
+    sky.addColorStop(0.55, "#ecdff4");
+    sky.addColorStop(1, "#fde6cf");
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, w, h);
 
-    const sx = w - Math.min(170, w * 0.18), sy = h * 0.46, sr = 24;
-    const glow = ctx.createRadialGradient(sx, sy, sr * 0.6, sx, sy, sr * 3.4);
-    glow.addColorStop(0, "rgba(246, 196, 69, 0.5)");
-    glow.addColorStop(1, "rgba(246, 196, 69, 0)");
-    ctx.fillStyle = glow;
-    ctx.fillRect(sx - sr * 3.4, sy - sr * 3.4, sr * 6.8, sr * 6.8);
-
-    ctx.strokeStyle = colors.sparkle;
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    const turn = still ? 0 : t / 9000;
-    for (let i = 0; i < 12; i++) {
-      const a = turn + (i * Math.PI) / 6;
-      const len = i % 2 ? 1.6 : 1.8;
-      ctx.beginPath();
-      ctx.moveTo(sx + Math.cos(a) * sr * 1.3, sy + Math.sin(a) * sr * 1.3);
-      ctx.lineTo(sx + Math.cos(a) * sr * len, sy + Math.sin(a) * sr * len);
-      ctx.stroke();
-    }
-    ctx.fillStyle = colors.sparkle;
+    const sx = w - Math.min(170, w * 0.18), sy = h * 0.6, sr = 22;
+    const haze = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr * 7);
+    haze.addColorStop(0, "rgba(255, 236, 190, 0.75)");
+    haze.addColorStop(0.35, "rgba(255, 222, 170, 0.3)");
+    haze.addColorStop(1, "rgba(255, 222, 170, 0)");
+    ctx.fillStyle = haze;
+    ctx.fillRect(sx - sr * 7, sy - sr * 7, sr * 14, sr * 14);
+    const disc = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr);
+    disc.addColorStop(0, "#fffdf4");
+    disc.addColorStop(0.7, "#fff1c6");
+    disc.addColorStop(1, "rgba(255, 228, 160, 0.9)");
+    ctx.fillStyle = disc;
     ctx.beginPath(); ctx.arc(sx, sy, sr, 0, 6.28); ctx.fill();
 
-    const span = w + 240;
-    for (const c of clouds) {
-      const x = still ? c.x - 120 : (((c.x - t * c.v) % span) + span) % span - 120;
-      cloud(x, c.y, c.s);
+    // ince, yüksek bulut tülleri
+    for (const wp of wisps) {
+      const x = still ? wp.x : (((wp.x - t * wp.v) % (w + 400)) + w + 400) % (w + 400) - 200;
+      const g = ctx.createLinearGradient(x, 0, x + wp.len, 0);
+      g.addColorStop(0, "rgba(255, 255, 255, 0)");
+      g.addColorStop(0.5, "rgba(255, 255, 255, 0.45)");
+      g.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.ellipse(x + wp.len / 2, wp.y, wp.len / 2, 3.5, 0, 0, 6.28); ctx.fill();
     }
-  }
 
-  function cloud(x, y, s) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(s, s);
-    ctx.shadowColor = "rgba(126, 79, 196, 0.18)";
-    ctx.shadowBlur = 14;
-    ctx.shadowOffsetY = 5;
-    ctx.fillStyle = "#ffffff";
-    ctx.beginPath();
-    ctx.arc(-26, 4, 15, 0, 6.28);
-    ctx.arc(-6, -8, 20, 0, 6.28);
-    ctx.arc(18, -2, 17, 0, 6.28);
-    ctx.arc(36, 7, 11, 0, 6.28);
-    ctx.rect(-30, 4, 66, 14);
-    ctx.fill();
-    ctx.restore();
+    const span = w + 400;
+    for (const c of clouds) {
+      const x = still ? c.x - 200 : (((c.x - t * c.v) % span) + span) % span - 200;
+      ctx.globalAlpha = c.alpha;
+      ctx.drawImage(c.img, x, c.y - c.img.ch * 0.6, c.img.cw, c.img.ch);
+    }
+    ctx.globalAlpha = 1;
   }
 
   // Gece: gökyüzü sağdan sola yavaşça akar; sahne iki kez yan yana çizilerek kesintisiz döner
